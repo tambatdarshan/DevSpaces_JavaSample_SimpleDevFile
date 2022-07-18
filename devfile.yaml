@@ -9,38 +9,3 @@ projects:
       remotes:
         origin: 'https://github.com/RickJWagner/DevSpaces_JavaSample_SimpleDevFile'
     name: devspacesjavasample
-components:
-  - container:
-      args:
-        - sh
-        - '-c'
-        - '${PLUGIN_REMOTE_ENDPOINT_EXECUTABLE}'
-      env:
-        - name: JAVA_OPTS
-          value: '-XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom -Duser.home=/home/user'
-        - name: MAVEN_OPTS
-          value: $(JAVA_OPTS)
-        - name: PLUGIN_REMOTE_ENDPOINT_EXECUTABLE
-          value: /remote-endpoint/plugin-remote-endpoint
-        - name: THEIA_PLUGINS
-          value: 'local-dir:///plugins/sidecars/maven'
-        - name: CHE_DASHBOARD_URL
-          value: 'https://devspaces-crw.apps.sandbox-stage.gb17.p1.openshiftapps.com'
-        - name: CHE_PLUGIN_REGISTRY_URL
-          value: 'https://devspaces-crw.apps.sandbox-stage.gb17.p1.openshiftapps.com/plugin-registry/v3'
-        - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
-          value: 'http://plugin-registry.crw.svc:8080/v3'
-      image: 'quay.io/devspaces/udi-rhel8:3.1'
-      memoryLimit: 512Mi
-      mountSources: true
-      sourceMapping: /projects
-      volumeMounts:
-        - name: m2
-          path: /home/user/.m2
-        - name: remote-endpoint
-          path: /remote-endpoint
-        - name: plugins
-          path: /plugins
-    name: maven
-  - name: m2
-    volume: {}
