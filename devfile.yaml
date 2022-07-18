@@ -44,16 +44,3 @@ components:
     name: maven
   - name: m2
     volume: {}
-commands:
-  - exec:
-      commandLine: mvn  clean package
-      component: maven
-      label: 1. Build
-      workingDir: '${PROJECTS_ROOT}/devspacesjavasample'
-    id: build
-  - exec:
-      commandLine: 'mvn  clean package exec:java -Dexec.mainClass="hello.HelloWorld"'
-      component: maven
-      label: 2. Run
-      workingDir: '${PROJECTS_ROOT}/devspacesjavasample'
-    id: run
