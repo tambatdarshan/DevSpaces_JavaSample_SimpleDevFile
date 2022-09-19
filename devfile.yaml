@@ -1,11 +1,11 @@
 schemaVersion: 2.1.0
 metadata:
   name: java-maven2
-  namespace: test-dev
+  namespace: rhn-support-rick-dev
 projects:
   - git:
       checkoutFrom:
         revision: main
       remotes:
-        origin: 'https://github.com/tambatdarshan/DevSpaces_JavaSample_SimpleDevFile'
+        origin: 'https://github.com/RickJWagner/DevSpaces_JavaSample_SimpleDevFile'
     name: devspacesjavasample
