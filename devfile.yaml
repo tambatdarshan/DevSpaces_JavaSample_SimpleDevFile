@@ -7,5 +7,5 @@ projects:
       checkoutFrom:
         revision: main
       remotes:
-        origin: 'https://github.com/RickJWagner/DevSpaces_JavaSample_SimpleDevFile'
+        origin: 'https://github.com/tambatdarshan/DevSpaces_JavaSample_SimpleDevFile'
     name: devspacesjavasample
