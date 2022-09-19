@@ -1,7 +1,7 @@
 schemaVersion: 2.1.0
 metadata:
   name: java-maven2
-  namespace: rhn-support-rick-dev
+  namespace: test-dev
 projects:
   - git:
       checkoutFrom:
