@@ -1,11 +1,208 @@
 schemaVersion: 2.1.0
 metadata:
-  name: java-maven2
-  namespace: rhn-support-rick-dev
+  name: liferay-blade-samples
+  namespace: cl-radaviko-excellus-com-devspaces-pgn732
 projects:
-  - git:
-      checkoutFrom:
-        revision: main
-      remotes:
-        origin: 'https://github.com/RickJWagner/DevSpaces_JavaSample_SimpleDevFile'
-    name: devspacesjavasample
+    - git:
+        remotes:
+          origin: 'https://github.com/DaniellaFreese/liferay-blade-samples.git'
+      name: liferay-blade-samples
+components:
+  - name: liferay
+    openshift:
+      inlined: |
+        ---
+        apiVersion: v1
+        kind: List
+        items:
+        -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: liferay
+            labels:
+              app: liferay
+          spec:
+            replicas: 1 
+            selector:
+              matchLabels:
+                app: liferay
+            strategy:
+              type: RollingUpdate 
+            template:
+              metadata:
+                labels:
+                  app: liferay
+              spec:
+                containers:
+                - env: 
+                  - name: LIFERAY_JAVA_OPTS 
+                    value: -Xms2g -Xmx2g
+                  - name: LIFERAY_MODULE_PERIOD_FRAMEWORK_PERIOD_PROPERTIES_PERIOD_OSGI_PERIOD_CONSOLE
+                    value: 0.0.0.0:11311
+                  - name: LIFERAY_WEB_PERIOD_SERVER_PERIOD_DISPLAY_PERIOD_NODE 
+                    value: "true"
+                  - name: LIFERAY_REDIRECT_PERIOD_URL_PERIOD_SECURITY_PERIOD_MODE 
+                    value: "domain"
+                  - name: JAVA_VERSION
+                    value: zulu11
+                  image: image-registry.openshift-image-registry.svc:5000/liferay/liferay:latest
+                  resources:
+                    requests: 
+                      memory: "2048Mi"
+                      cpu: "2"
+                    limits: 
+                      memory: "4098Mi"
+                      cpu: "3"
+                  name: liferay 
+                  ports: 
+                  - containerPort: 11311
+                  - containerPort: 8080
+                  readinessProbe: 
+                    httpGet:
+                      path: "/c/portal/layout"
+                      port: 8080
+                    initialDelaySeconds: 120
+                    periodSeconds: 15
+                    failureThreshold: 3
+                    successThreshold: 3
+                  livenessProbe:
+                    tcpSocket:
+                      port: 8080
+                    initialDelaySeconds: 120
+                    periodSeconds: 20
+                    failureThreshold: 3
+                    successThreshold: 1
+                  volumeMounts:
+                  - mountPath: /opt/liferay/data
+                    name: liferay-data 
+                  - mountPath: /mnt/liferay
+                    name: liferay-config 
+                restartPolicy: Always 
+                volumes: 
+                - name: liferay-data
+                  emptyDir: {}
+                - name: liferay-config
+                  emptyDir: {}
+        -
+          apiVersion: v1
+          kind: Service
+          metadata:
+            labels:
+              app: liferay
+            name: liferay-svc
+          spec:
+            ports:
+            - name: "8080"
+              port: 8080
+              protocol: TCP 
+              targetPort: 8080
+            selector:
+              app: liferay
+        - 
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: liferay
+          spec:
+            to:
+              kind: Service
+              name: liferay-svc
+            port:
+              targetPort: 8080
+  - attributes:
+      app.kubernetes.io/name: tools
+      che-theia.eclipse.org/vscode-extensions:
+        - 'relative:extension/resources/github_com/redhat-developer/devspaces-vscode-extensions/releases/download/7_44-che-assets/java-0.82.0-369.vsix'
+        - 'relative:extension/resources/github_com/fabric8-analytics/fabric8-analytics-vscode-extension/releases/download/0_2_1/fabric8-analytics-0.2.1.vsix'
+        - 'relative:extension/resources/github_com/redhat-developer/devspaces-vscode-extensions/releases/download/7_44-che-assets/vscode-java-debug-0.26.0.vsix'
+        - 'relative:extension/resources/open-vsx_org/api/vscjava/vscode-java-test/0_28_1/file/vscjava.vscode-java-test-0.28.1.vsix'
+      che-theia.eclipse.org/vscode-preferences:
+        java.server.launchMode: Standard
+    container:
+      args:
+        - sh
+        - '-c'
+        - '${PLUGIN_REMOTE_ENDPOINT_EXECUTABLE}'
+      endpoints:
+        - exposure: public
+          name: health-checks-endpoint
+          protocol: http
+          targetPort: 8080
+      env:
+        - name: PLUGIN_REMOTE_ENDPOINT_EXECUTABLE
+          value: /remote-endpoint/plugin-remote-endpoint
+        - name: THEIA_PLUGINS
+          value: 'local-dir:///plugins/sidecars/tools'
+        - name: CHE_DASHBOARD_URL
+          value: 'https://devspaces.apps.deoggyu0.eastus.aroapp.io'
+        - name: CHE_PLUGIN_REGISTRY_URL
+          value: 'https://devspaces.apps.deoggyu0.eastus.aroapp.io/plugin-registry/v3'
+        - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
+          value: 'http://plugin-registry.openshift-operators.svc:8080/v3'
+        - name: JAVA_OPTS
+          value: '-XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom -Duser.home=/home/user'
+        - name: MAVEN_OPTS
+          value: $(JAVA_OPTS)
+      image: 'registry.redhat.io/devspaces/udi-rhel8@sha256:d55549aad15742f6f7310da0c7abc1e65dd5d3ad2e3efb8fbf414cf91b9efac7'
+      memoryLimit: 3Gi
+      mountSources: true
+      sourceMapping: /projects
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+        - name: remote-endpoint
+          path: /remote-endpoint
+        - name: plugins
+          path: /plugins
+    name: tools
+  - name: m2
+    volume:
+      size: 1G
+commands:
+  - exec:
+      commandLine: mvn clean install
+      component: tools
+      group:
+        kind: build
+      workingDir: '${PROJECTS_ROOT}/liferay-blade-samples/maven'
+    id: 1-build
+  - exec:
+      commandLine: 'mvn clean install && mvn -Dvertx.disableDnsResolver=true vertx:run'
+      component: tools
+      group:
+        kind: run
+      workingDir: '${PROJECTS_ROOT}/vertx-health-checks-example-redhat'
+    id: 2-build-and-run
+  - exec:
+      commandLine: 'mvn -DskipTests vertx:debug'
+      component: tools
+      group:
+        kind: debug
+      workingDir: '${PROJECTS_ROOT}/vertx-health-checks-example-redhat'
+    id: 3-run-in-debug-mode
+  - exec:
+      commandLine: mvn verify
+      component: tools
+      group:
+        kind: debug
+      workingDir: '${PROJECTS_ROOT}/vertx-health-checks-example-redhat'
+    id: 4-run-tests
+  - exec:
+      commandLine: |
+        echo
+        echo "Before you can deploy this application to an openshift cluster,"
+        echo "you must run 'oc login ...' in the tools terminal."
+        echo
+      component: tools
+      group:
+        kind: run
+      workingDir: '${PROJECTS_ROOT}/vertx-health-checks-example-redhat'
+    id: 5-log-into-deployment-cluster
+  - exec:
+      commandLine: 'mvn fabric8:deploy -Popenshift -DskipTests -Dvertx.disableDnsResolver=true'
+      component: tools
+      group:
+        kind: run
+      workingDir: '${PROJECTS_ROOT}/vertx-health-checks-example-redhat'
+    id: 6-deploy-to-openshift
